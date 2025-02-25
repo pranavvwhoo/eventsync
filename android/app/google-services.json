@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "522744268708",
+    "project_id": "ipd-210",
+    "storage_bucket": "ipd-210.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522744268708:android:eccad8d429b4852e31a331",
+        "android_client_info": {
+          "package_name": "com.example.eventsync"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDN868aCbuiQVu6KRGOvj0EwW1Njh8t_OQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

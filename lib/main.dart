@@ -1,13 +1,16 @@
-import 'package:eventsync/addpost.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:eventsync/addpost.dart';
 import 'package:eventsync/profile.dart'; 
 import 'package:eventsync/dashboard.dart';
 import 'package:eventsync/explore.dart';
 import 'package:eventsync/groups.dart';
-import 'package:eventsync/notifications.dart';
 import 'package:eventsync/login.dart';
+import 'package:eventsync/firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Ensures everything is set up before running the app
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform); // Initialize Firebase
   runApp(const MyApp());
 }
 
@@ -68,7 +71,7 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.explore),
             label: 'Explore',
           ),
-           BottomNavigationBarItem(
+          BottomNavigationBarItem(
             icon: Icon(Icons.add_box),
             label: 'Post',
           ),

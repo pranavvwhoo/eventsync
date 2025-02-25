@@ -1,9 +1,11 @@
 import 'package:eventsync/main.dart';
+import 'package:eventsync/signup.dart';
 import 'package:eventsync/theme.dart';
 import 'package:eventsync/textfield_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UserLogin extends StatefulWidget {
   const UserLogin({super.key});
@@ -14,25 +16,82 @@ class UserLogin extends StatefulWidget {
 
 class _UserLoginState extends State<UserLogin> {
   bool isLoading = false;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String? _errorMessage;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  void login() async {
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> login() async {
     setState(() {
       isLoading = true;
+      _errorMessage = null;
     });
 
-    // Simulate a delay for authentication (e.g., API call)
-    await Future.delayed(Duration(seconds: 3));
+    try {
+      // Firebase authentication
+      await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      
+      // Navigate to dashboard and remove the back button
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen()),
+          (route) => false, // This removes all previous routes from the stack
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        if (e.code == 'user-not-found') {
+          _errorMessage = 'No user found with this email.';
+        } else if (e.code == 'wrong-password') {
+          _errorMessage = 'Incorrect password.';
+        } else if (e.code == 'invalid-email') {
+          _errorMessage = 'Invalid email address.';
+        } else {
+          _errorMessage = 'Login failed: ${e.message}';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'An error occurred. Please try again.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
-    setState(() {
-      isLoading = false;
-    });
+  void forgotPassword() async {
+    if (_emailController.text.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter your email first.';
+      });
+      return;
+    }
 
-    // Navigate to dashboard and remove the back button
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => MainScreen()),
-      (route) => false, // This removes all previous routes from the stack
-    );
+    try {
+      await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Password reset email sent!')),
+      );
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = 'Password reset failed: ${e.message}';
+      });
+    }
   }
 
   @override
@@ -82,6 +141,26 @@ class _UserLoginState extends State<UserLogin> {
                         fontWeight: FontWeight.normal)),
               ),
               const SizedBox(height: 20),
+              
+              // Error message display
+              if (_errorMessage != null)
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(10),
+                  margin: EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _errorMessage!,
+                    style: GoogleFonts.inter(
+                      color: Colors.red,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text("Email",
@@ -93,9 +172,16 @@ class _UserLoginState extends State<UserLogin> {
               ),
               CustomTextField(
                 hintText: "example@gmail.com",
+                controller: _emailController,
                 onChanged: (value) {
-                  print("Email entered: $value");
+                  // Optional: clear error message on change
+                  if (_errorMessage != null) {
+                    setState(() {
+                      _errorMessage = null;
+                    });
+                  }
                 },
+                obscureText: false,
               ),
               const SizedBox(height: 20),
               Align(
@@ -110,17 +196,22 @@ class _UserLoginState extends State<UserLogin> {
               CustomTextField(
                 suffixIcon: Icons.visibility_outlined,
                 hintText: "******",
+                controller: _passwordController,
                 onChanged: (value) {
-                  print("Password entered: $value");
+                  // Optional: clear error message on change
+                  if (_errorMessage != null) {
+                    setState(() {
+                      _errorMessage = null;
+                    });
+                  }
                 },
+                obscureText: true,
               ),
               const SizedBox(height: 10),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {
-                    // Add your forgot password logic here
-                  },
+                  onPressed: forgotPassword,
                   child: Text("Forgot Password?",
                       style: GoogleFonts.inter(
                           color: textColor,
@@ -164,7 +255,13 @@ class _UserLoginState extends State<UserLogin> {
                           fontSize: 16,
                           fontWeight: FontWeight.normal)),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // Navigate to registration screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => UserRegister()),
+                      );
+                    },
                     child: Text("Register",
                         style: GoogleFonts.inter(
                             letterSpacing: 0.1,
@@ -190,3 +287,6 @@ class _UserLoginState extends State<UserLogin> {
     );
   }
 }
+
+// This class is referenced but not shown in original code
+// Create a basic placeholder

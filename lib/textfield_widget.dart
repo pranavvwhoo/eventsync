@@ -16,7 +16,7 @@ class CustomTextField extends StatelessWidget {
     this.borderColor = const Color(0xff9CA3AF),
     this.hintTextColor = Colors.grey,
     this.onChanged,
-    this.suffixIcon,
+    this.suffixIcon, required bool obscureText,
   });
 
   @override
